@@ -18,6 +18,10 @@
 ### How to run a model locally:
 
 1. Follow the instructions to install Ollama and download the model based on CPU config: https://github.com/ollama/ollama
+   ```
+   $> curl -fsSL https://ollama.com/install.sh | sh
+   $> ollama pull gemma:2b
+   ```
 2. Now, run the model locally 
 3. Then, go into the `app.py`
 4. Select the model you want to run by **commenting out** others:
