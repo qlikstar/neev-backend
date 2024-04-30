@@ -11,18 +11,35 @@ load_dotenv()
 
 if __name__ == "__main__":
 
-    model = AnthropicModel(AnthropicModelIdentifier.CLAUDE3_HAIKU, VoyageEmbedIdentifier.VOYAGE_2)
-    # model = OllamaModel(OllamaModelIdentifier.GEMMA_2B)
-    # model = OpenAIModel()
-
     st.set_page_config("Neev AI")
-    st.header(f"Neev Fintelligence with {model.get_model_name()}💁")
+    st.header(f"Neev Fintelligence 💁")
 
-    user_question = st.text_input("Ask a Question from the uploaded files")
-    if user_question:
-        conv_service = ConversationalChainService(model)
-        response = conv_service.get_response(user_question)
-        st.write("Reply: ", response["output_text"])
+    options = ("Anthropic Claude3",
+               "Ollama",
+               "OpenAI")
+    default_index = options.index("OpenAI")
+
+    option = st.selectbox("Please select a Large language model",
+                          options,
+                          index=default_index,
+                          placeholder="Select an LLM")
+
+    if option == "Anthropic Claude3":
+        model = AnthropicModel(AnthropicModelIdentifier.CLAUDE3_HAIKU, VoyageEmbedIdentifier.VOYAGE_2)
+    elif option == "Ollama":
+        model = OllamaModel(OllamaModelIdentifier.LLAMA3_8B)
+    elif option == "OpenAI":
+        model = OpenAIModel()
+    else:
+        st.error("Invalid selection")
+
+    with st.form("Query_form"):
+        user_question = st.text_area("Ask a Question from the uploaded files")
+        submitted = st.form_submit_button("Submit")
+        if user_question and submitted:
+            conv_service = ConversationalChainService(model)
+            response = conv_service.get_response(user_question)
+            st.write("Reply: ", response["output_text"])
 
     with st.sidebar:
         st.title("Menu:")

@@ -4,8 +4,8 @@ from enum import Enum
 class OllamaModelIdentifier(Enum):
     GEMMA_2B = "gemma:2b"
     GEMMA_7B = "gemma:7b"
-    LLAMA_70B = "llama3:70b"
-    LLAMA_8B = "llama3"
+    LLAMA3_70B = "llama3:70b"
+    LLAMA3_8B = "llama3"
 
 
 """
