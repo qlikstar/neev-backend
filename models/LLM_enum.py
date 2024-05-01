@@ -5,12 +5,12 @@ class OllamaModelIdentifier(Enum):
     GEMMA_2B = "gemma:2b"
     GEMMA_7B = "gemma:7b"
     LLAMA3_70B = "llama3:70b"
-    LLAMA3_8B = "llama3"
+    LLAMA3_8B = "llama3:8b"
 
 
-"""
-https://docs.anthropic.com/claude/docs/models-overview
-"""
+'''
+Anthropic Models: https://docs.anthropic.com/claude/docs/models-overview
+'''
 
 
 class AnthropicModelIdentifier(Enum):

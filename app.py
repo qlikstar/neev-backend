@@ -1,11 +1,12 @@
 import streamlit as st
 from dotenv import load_dotenv
 
-from models.EmbeddingModelEnum import VoyageEmbedIdentifier
-from models.LargeLangModel import OpenAIModel, OllamaModel, AnthropicModel
-from models.LLModelEnum import OllamaModelIdentifier, AnthropicModelIdentifier
-from service.ConversationService import ConversationalChainService
-from service.EmbedService import EmbeddingCreatorService
+from models.embedding_enum import VoyageEmbedIdentifier
+from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier
+from service.conversation import ConversationalChainService
+from service.doc_processor import DocProcessorService
+from service.vector_store import FaissVectorStore, ChromaVectorStore
 
 load_dotenv()
 
@@ -32,12 +33,15 @@ if __name__ == "__main__":
         model = OpenAIModel()
     else:
         st.error("Invalid selection")
+        exit(0)
+
+    vector_store = FaissVectorStore(model)
 
     with st.form("Query_form"):
         user_question = st.text_area("Ask a Question from the uploaded files")
         submitted = st.form_submit_button("Submit")
         if user_question and submitted:
-            conv_service = ConversationalChainService(model)
+            conv_service = ConversationalChainService(model, vector_store)
             response = conv_service.get_response(user_question)
             st.write("Reply: ", response["output_text"])
 
@@ -48,7 +52,14 @@ if __name__ == "__main__":
 
         if st.button("Submit & Process"):
             with st.spinner("Processing..."):
-                embed_service = EmbeddingCreatorService(model)
-                file_paths = embed_service.save_files_to_temp(data_files)
-                embed_service.create_embeddings(file_paths)
+                doc_processor_service = DocProcessorService()
+                chunked_docs = doc_processor_service.get_chunked_documents(data_files)
+                vector_store.create_vector_embeddings(chunked_docs)
                 st.success("Done")
+
+        st.markdown("""---""")
+
+        if st.button("Clear cache for model"):
+            with st.spinner("Processing..."):
+                vector_store.drop_vector_store()
+                st.error("Done")
