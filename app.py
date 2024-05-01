@@ -2,8 +2,8 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from models.embedding_enum import VoyageEmbedIdentifier
-from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel
-from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier
+from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel, HuggingFaceModel
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier
 from service.conversation import ConversationalChainService
 from service.doc_processor import DocProcessorService
 from service.vector_store import FaissVectorStore, ChromaVectorStore
@@ -17,7 +17,8 @@ if __name__ == "__main__":
 
     options = ("Anthropic Claude3",
                "Ollama",
-               "OpenAI")
+               "OpenAI",
+               "HuggingFaceHub")
     default_index = options.index("OpenAI")
 
     option = st.selectbox("Please select a Large language model",
@@ -31,11 +32,13 @@ if __name__ == "__main__":
         model = OllamaModel(OllamaModelIdentifier.LLAMA3_8B)
     elif option == "OpenAI":
         model = OpenAIModel()
+    elif option == "HuggingFaceHub":
+        model = HuggingFaceModel(HuggingFaceModelIdentifier.HF_FINANCE_13B)
     else:
         st.error("Invalid selection")
         exit(0)
 
-    vector_store = FaissVectorStore(model)
+    vector_store = ChromaVectorStore(model)
 
     with st.form("Query_form"):
         user_question = st.text_area("Ask a Question from the uploaded files")

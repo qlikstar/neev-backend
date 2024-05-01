@@ -17,3 +17,7 @@ class AnthropicModelIdentifier(Enum):
     CLAUDE3_OPUS = "claude-3-opus-20240307"
     CLAUDE3_SONNET = "claude-3-sonnet-20240307"
     CLAUDE3_HAIKU = "claude-3-haiku-20240307"
+
+
+class HuggingFaceModelIdentifier(Enum):
+    HF_FINANCE_13B = "AdaptLLM/finance-LLM-13B"

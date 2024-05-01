@@ -3,11 +3,12 @@ from abc import ABC, abstractmethod
 
 from langchain_anthropic import ChatAnthropic
 from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings
+from langchain_community.llms.huggingface_hub import HuggingFaceHub
 from langchain_community.llms.ollama import Ollama
 from langchain_openai import OpenAIEmbeddings, OpenAI
 
 from models.embedding_enum import VoyageEmbedIdentifier
-from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier
 
 BASE_VECTOR_STORE = ".tmp/VECTOR-STORE"
 
@@ -87,3 +88,26 @@ class AnthropicModel(LargeLanguageModel):
 
     def get_llm(self):
         return ChatAnthropic(model=self.model_identifier.value)
+
+
+class HuggingFaceModel(LargeLanguageModel):
+
+    def __init__(self, model_identifier: HuggingFaceModelIdentifier):
+        super().__init__()
+        self.key = os.getenv('HUGGINGFACEHUB_API_TOKEN')
+        if self.key is None:
+            raise EnvironmentError("HUGGINGFACEHUB_API_TOKEN environment variable is not set.")
+
+        self.llm_model = model_identifier
+        self.temp = 0.5
+        self.max_len = 64
+
+    def get_model_name(self):
+        return self.llm_model
+
+    def get_embeddings(self):
+        return FastEmbedEmbeddings()
+
+    def get_llm(self):
+        return HuggingFaceHub(repo_id=self.llm_model,
+                              model_kwargs={"temperature": self.temp, "max_length": self.max_len})
