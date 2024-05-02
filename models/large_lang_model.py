@@ -2,7 +2,7 @@ import os
 from abc import ABC, abstractmethod
 
 from langchain_anthropic import ChatAnthropic
-from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings
+from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings, DatabricksEmbeddings
 from langchain_community.llms.huggingface_hub import HuggingFaceHub
 from langchain_community.llms.ollama import Ollama
 from langchain_openai import OpenAIEmbeddings, OpenAI
@@ -44,7 +44,7 @@ class OpenAIModel(LargeLanguageModel):
         if self.key is None:
             raise EnvironmentError("OPENAI_API_KEY environment variable is not set.")
 
-        self.embedding_model = "text-embedding-3-large"
+        self.embedding_model = "text-embedding-ada-002"
         self.llm_model = "gpt-3.5-turbo-instruct"
         self.temp = 0.5
 
@@ -62,12 +62,15 @@ class OllamaModel(LargeLanguageModel):
     def __init__(self, model_identifier: OllamaModelIdentifier):
         super().__init__()
         self.model_identifier = model_identifier
+        self.key = os.getenv('OPENAI_API_KEY')
+        self.embedding_model = "text-embedding-ada-002"
+        self.llm_model = "gpt-3.5-turbo-instruct"
 
     def get_model_name(self):
         return f"Ollama:{self.model_identifier.name}"
 
     def get_embeddings(self):
-        return FastEmbedEmbeddings()
+        return OpenAIEmbeddings(openai_api_key=self.key, model=self.embedding_model)
 
     def get_llm(self):
         return Ollama(model=self.model_identifier.value)
