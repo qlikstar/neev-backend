@@ -1,14 +1,14 @@
 import os
-import shutil
 from abc import ABC, abstractmethod
 
 from langchain_anthropic import ChatAnthropic
-from langchain_community.embeddings import OllamaEmbeddings, VoyageEmbeddings
+from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings, DatabricksEmbeddings
+from langchain_community.llms.huggingface_hub import HuggingFaceHub
 from langchain_community.llms.ollama import Ollama
 from langchain_openai import OpenAIEmbeddings, OpenAI
 
-from models.EmbeddingModelEnum import VoyageEmbedIdentifier
-from models.LLModelEnum import OllamaModelIdentifier, AnthropicModelIdentifier
+from models.embedding_enum import VoyageEmbedIdentifier
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier
 
 BASE_VECTOR_STORE = ".tmp/VECTOR-STORE"
 
@@ -36,20 +36,15 @@ class LargeLanguageModel(ABC):
     def get_llm(self):
         pass
 
-    @abstractmethod
-    def get_vector_store_name(self):
-        pass
-
 
 class OpenAIModel(LargeLanguageModel):
     def __init__(self):
-
         super().__init__()
         self.key = os.getenv('OPENAI_API_KEY')
         if self.key is None:
             raise EnvironmentError("OPENAI_API_KEY environment variable is not set.")
 
-        self.embedding_model = "text-embedding-3-large"
+        self.embedding_model = "text-embedding-ada-002"
         self.llm_model = "gpt-3.5-turbo-instruct"
         self.temp = 0.5
 
@@ -62,31 +57,27 @@ class OpenAIModel(LargeLanguageModel):
     def get_llm(self):
         return OpenAI(openai_api_key=self.key, model_name=self.llm_model, temperature=self.temp)
 
-    def get_vector_store_name(self):
-        return f"{BASE_VECTOR_STORE}-OPENAI"
-
 
 class OllamaModel(LargeLanguageModel):
     def __init__(self, model_identifier: OllamaModelIdentifier):
         super().__init__()
         self.model_identifier = model_identifier
+        self.key = os.getenv('OPENAI_API_KEY')
+        self.embedding_model = "text-embedding-ada-002"
+        self.llm_model = "gpt-3.5-turbo-instruct"
 
     def get_model_name(self):
         return f"Ollama:{self.model_identifier.name}"
 
     def get_embeddings(self):
-        return OllamaEmbeddings(model=self.model_identifier.value)
+        return OpenAIEmbeddings(openai_api_key=self.key, model=self.embedding_model)
 
     def get_llm(self):
         return Ollama(model=self.model_identifier.value)
 
-    def get_vector_store_name(self):
-        return f"{BASE_VECTOR_STORE}-{self.model_identifier.name}"
-
 
 class AnthropicModel(LargeLanguageModel):
     def __init__(self, model_identifier: AnthropicModelIdentifier, embed_identifier: VoyageEmbedIdentifier):
-
         super().__init__()
         self.model_identifier = model_identifier
         self.voyage_api_key = os.getenv('VOYAGE_API_KEY')
@@ -101,18 +92,25 @@ class AnthropicModel(LargeLanguageModel):
     def get_llm(self):
         return ChatAnthropic(model=self.model_identifier.value)
 
-    def get_vector_store_name(self):
-        return f"{BASE_VECTOR_STORE}-{self.model_identifier.name}"
 
+class HuggingFaceModel(LargeLanguageModel):
 
-def drop_vector_store(vector_store_name: str):
-    # Path to the directory under .tmp
-    directory_path = os.path.join(".tmp", vector_store_name)
+    def __init__(self, model_identifier: HuggingFaceModelIdentifier):
+        super().__init__()
+        self.key = os.getenv('HUGGINGFACEHUB_API_TOKEN')
+        if self.key is None:
+            raise EnvironmentError("HUGGINGFACEHUB_API_TOKEN environment variable is not set.")
 
-    # Check if the directory exists
-    if os.path.exists(directory_path):
-        # Delete the directory and its contents
-        shutil.rmtree(directory_path)
-        print(f"Vector Store '{vector_store_name}' deleted successfully.")
-    else:
-        print(f"Vector Store '{vector_store_name}' does not exist.")
+        self.llm_model = model_identifier
+        self.temp = 0.5
+        self.max_len = 64
+
+    def get_model_name(self):
+        return self.llm_model.name
+
+    def get_embeddings(self):
+        return FastEmbedEmbeddings()
+
+    def get_llm(self):
+        return HuggingFaceHub(repo_id=self.llm_model.value,
+                              model_kwargs={"temperature": self.temp, "max_length": self.max_len})

@@ -2,18 +2,12 @@ import os
 import tempfile
 
 import pandas as pd
-from typing import List
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
-from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from models.LargeLangModel import LargeLanguageModel
 
-
-class EmbeddingCreatorService:
-    def __init__(self, large_lang_model: LargeLanguageModel):
-        self.large_lang_model = large_lang_model
+class DocProcessorService:
 
     def excel_to_csv(self, input_file):
         xls = pd.ExcelFile(input_file)
@@ -29,22 +23,22 @@ class EmbeddingCreatorService:
             output_filenames.append(csv_file)
         return output_filenames
 
-    def save_to_vector_store(self, doc):
+    def chunk_doc(self, doc) -> list[Document]:
         content = self.load_document(doc)
-        chunks = self.chunk_data(content)
-        vector_store = FAISS.from_documents(chunks, embedding=self.large_lang_model.get_embeddings())
-        vector_store.save_local(self.large_lang_model.get_vector_store_name())
-        return vector_store
+        return self.chunk_data(content)
 
-    def create_embeddings(self, data_files):
-        for data_file in data_files:
-            name, extension = os.path.splitext(data_file)
+    def get_chunked_documents(self, data_files) -> list[Document]:
+        file_paths = self.save_files_to_temp(data_files)
+        documents = []
+        for file_path in file_paths:
+            name, extension = os.path.splitext(file_path)
             if extension in ['.xls', '.xlsx']:
-                output_csv_files = self.excel_to_csv(data_file)
+                output_csv_files = self.excel_to_csv(file_path)
                 for file in output_csv_files[:1]:
-                    self.save_to_vector_store(file)
+                    documents.extend(self.chunk_doc(file))
             else:
-                self.save_to_vector_store(data_file)
+                documents.extend(self.chunk_doc(file_path))
+        return documents
 
     @staticmethod
     def create_directory(directory):
@@ -66,7 +60,7 @@ class EmbeddingCreatorService:
         return file_paths
 
     @staticmethod
-    def load_document(file) -> List[Document]:
+    def load_document(file) -> list[Document]:
         loaders = {
             '.csv': CSVLoader,
             '.pdf': PyPDFLoader,
@@ -82,7 +76,7 @@ class EmbeddingCreatorService:
             return []
 
     @staticmethod
-    def chunk_data(data, chunk_size=1000, chunk_overlap=10):
+    def chunk_data(data, chunk_size=1000, chunk_overlap=10) -> list[Document]:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         chunks = text_splitter.split_documents(data)
         return chunks
