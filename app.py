@@ -16,7 +16,7 @@ if __name__ == "__main__":
     st.header(f"Neev Fintelligence 💁")
 
     options = ("Anthropic Claude3",
-               "Ollama",
+               "Ollama Llama3",
                "OpenAI",
                "HuggingFaceHub")
     default_index = options.index("OpenAI")
@@ -28,12 +28,12 @@ if __name__ == "__main__":
 
     if option == "Anthropic Claude3":
         model = AnthropicModel(AnthropicModelIdentifier.CLAUDE3_HAIKU, VoyageEmbedIdentifier.VOYAGE_2)
-    elif option == "Ollama":
+    elif option == "Ollama Llama3":
         model = OllamaModel(OllamaModelIdentifier.LLAMA3_8B)
     elif option == "OpenAI":
         model = OpenAIModel()
     elif option == "HuggingFaceHub":
-        model = HuggingFaceModel(HuggingFaceModelIdentifier.HF_FINANCE_13B)
+        model = HuggingFaceModel(HuggingFaceModelIdentifier.HF_ADAPT_FIN_CHAT)
     else:
         st.error("Invalid selection")
         exit(0)

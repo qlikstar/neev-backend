@@ -106,11 +106,11 @@ class HuggingFaceModel(LargeLanguageModel):
         self.max_len = 64
 
     def get_model_name(self):
-        return self.llm_model
+        return self.llm_model.name
 
     def get_embeddings(self):
         return FastEmbedEmbeddings()
 
     def get_llm(self):
-        return HuggingFaceHub(repo_id=self.llm_model,
+        return HuggingFaceHub(repo_id=self.llm_model.value,
                               model_kwargs={"temperature": self.temp, "max_length": self.max_len})

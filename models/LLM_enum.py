@@ -21,3 +21,6 @@ class AnthropicModelIdentifier(Enum):
 
 class HuggingFaceModelIdentifier(Enum):
     HF_FINANCE_13B = "AdaptLLM/finance-LLM-13B"
+    HF_BLOKE_FIN_GGUP = "TheBloke/finance-LLM-GGUF"
+    HF_SUJET_FIN_8B = "sujet-ai/Sujet-Finance-8B-v0.1"
+    HF_ADAPT_FIN_CHAT = "AdaptLLM/finance-chat"
