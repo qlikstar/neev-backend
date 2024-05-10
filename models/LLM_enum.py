@@ -2,10 +2,12 @@ from enum import Enum
 
 
 class OllamaModelIdentifier(Enum):
+    MISTRAL = "mistral"
     GEMMA_2B = "gemma:2b"
     GEMMA_7B = "gemma:7b"
-    LLAMA3_70B = "llama3:70b"
     LLAMA3_8B = "llama3:8b"
+    LLAMA3_70B = "llama3:70b"
+
 
 
 '''
@@ -24,3 +26,9 @@ class HuggingFaceModelIdentifier(Enum):
     HF_BLOKE_FIN_GGUP = "TheBloke/finance-LLM-GGUF"
     HF_SUJET_FIN_8B = "sujet-ai/Sujet-Finance-8B-v0.1"
     HF_ADAPT_FIN_CHAT = "AdaptLLM/finance-chat"
+
+
+class TogetherAiIdentifier(Enum):
+    RED_PAJAMA_7B = "togethercomputer/RedPajama-INCITE-7B-Base"
+    LLAMA3_8B_CHAT = "meta-llama/Llama-3-8b-chat-hf"
+    LLAMA3_70B_CHAT = "meta-llama/Llama-3-70b-chat-hf"
