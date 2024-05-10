@@ -2,13 +2,15 @@ import os
 from abc import ABC, abstractmethod
 
 from langchain_anthropic import ChatAnthropic
-from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings, DatabricksEmbeddings
+from langchain_community.embeddings import VoyageEmbeddings, FastEmbedEmbeddings, HuggingFaceHubEmbeddings
 from langchain_community.llms.huggingface_hub import HuggingFaceHub
 from langchain_community.llms.ollama import Ollama
 from langchain_openai import OpenAIEmbeddings, OpenAI
+from langchain_together import Together
 
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier, \
+    TogetherAiIdentifier
 from models.embedding_enum import VoyageEmbedIdentifier
-from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier
 
 BASE_VECTOR_STORE = ".tmp/VECTOR-STORE"
 
@@ -114,3 +116,25 @@ class HuggingFaceModel(LargeLanguageModel):
     def get_llm(self):
         return HuggingFaceHub(repo_id=self.llm_model.value,
                               model_kwargs={"temperature": self.temp, "max_length": self.max_len})
+
+
+class TogetherAiModel(LargeLanguageModel):
+
+    def __init__(self, model_identifier: TogetherAiIdentifier):
+        super().__init__()
+        self.key = os.getenv('TOGETHER_API_KEY')
+        if self.key is None:
+            raise EnvironmentError("TOGETHER_API_KEY environment variable is not set.")
+
+        self.llm_model = model_identifier
+        self.temp = 0.5
+        self.max_tokens = 128
+
+    def get_model_name(self):
+        return self.llm_model.name
+
+    def get_embeddings(self):
+        return HuggingFaceHubEmbeddings(model="BAAI/bge-small-en-v1.5")
+
+    def get_llm(self):
+        return Together(model=self.llm_model.value, temperature=self.temp, max_tokens=self.max_tokens, top_k=1)
