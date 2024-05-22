@@ -13,6 +13,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 
+from util.constants import INPUT_FILE_PATH
+
 load_dotenv()
 FAISS_VECTOR_STORE = "faiss_vector_store_ollama"
 EMBEDDINGS = OllamaEmbeddings(model="gemma:2b")
@@ -44,9 +46,9 @@ def excel_to_csv(input_file):
         # Read the sheet into a DataFrame
         df = pd.read_excel(xls, sheet_name)
 
-        create_directory(f".datafiles/{input_file.split('.')[0]}")
+        create_directory(f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}")
         # Define the CSV file name (you can customize the file name as needed)
-        csv_file = f".datafiles/{input_file.split('.')[0]}/{sheet_name}.csv"
+        csv_file = f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
 
         # Write the DataFrame to a CSV file
         df.to_csv(csv_file, index=False)

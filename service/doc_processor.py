@@ -6,6 +6,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
 from langchain_core.documents import Document
 
+from util.constants import INPUT_FILE_PATH
+
 
 class DocProcessorService:
 
@@ -16,8 +18,8 @@ class DocProcessorService:
         for sheet_name in xls.sheet_names:
             df = pd.read_excel(xls, sheet_name)
 
-            self.create_directory(f".datafiles/{input_file.split('.')[0]}")
-            csv_file = f".datafiles/{input_file.split('.')[0]}/{sheet_name}.csv"
+            self.create_directory(f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}")
+            csv_file = f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
 
             df.to_csv(csv_file, index=False)
             output_filenames.append(csv_file)
