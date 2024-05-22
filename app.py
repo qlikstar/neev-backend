@@ -1,6 +1,6 @@
 import streamlit as st
-from dotenv import load_dotenv
 
+from models.neev_lang_model_enum import NeevLangModelIdentifier
 from models.embedding_enum import VoyageEmbedIdentifier
 from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel, HuggingFaceModel, TogetherAiModel
 from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier, \
@@ -8,12 +8,11 @@ from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, Hug
 from service.conversation import ConversationalChainService
 from service.doc_processor import DocProcessorService
 from service.vector_store import FaissVectorStore, ChromaVectorStore
-
-load_dotenv()
+from util.startup import initialize
 
 
 def invoke_user_form(number, st, conv_service):
-    key = "user_form"+str(number)
+    key = "user_form" + str(number)
     with st.form(key=str(number)):
         user_question = st.text_area("Ask a Question from the uploaded files", key="question" + str(number))
         submitted = st.form_submit_button("Submit")
@@ -30,39 +29,35 @@ def invoke_user_form(number, st, conv_service):
 
 if __name__ == "__main__":
 
+    initialize()
     st.set_page_config("Neev AI")
-    st.header(f"Neev Fintelligence 💁")
+    st.header(f"🤖 Neev: FinOps Intelligence 🌟")
 
-    options = ("OpenAI GPT-3.5",
-               "Anthropic Claude3",
-               "Ollama Mistral",
-               "TogetherAI",
-               # "HuggingFaceHub"
-               )
-    default_index = options.index("Anthropic Claude3")
+    options = tuple(member.value for member in NeevLangModelIdentifier)
+    default_index = options.index(NeevLangModelIdentifier.ANTHROPIC_CLAUDE3.value)
 
     option = st.selectbox("Please select a Large language model",
                           options,
                           index=default_index,
                           placeholder="Select an LLM")
 
-    if option == "Anthropic Claude3":
-        model = AnthropicModel(AnthropicModelIdentifier.CLAUDE3_HAIKU, VoyageEmbedIdentifier.VOYAGE_2)
-    elif option == "OpenAI GPT-3.5":
-        model = OpenAIModel()
-    elif option == "Ollama Mistral":
-        model = OllamaModel(OllamaModelIdentifier.MISTRAL)
-    elif option == "TogetherAI":
-        model = TogetherAiModel(TogetherAiIdentifier.LLAMA3_70B_CHAT)
-    # elif option == "HuggingFaceHub":
+    if option == NeevLangModelIdentifier.ANTHROPIC_CLAUDE3.value:
+        ll_model = AnthropicModel(AnthropicModelIdentifier.CLAUDE3_HAIKU, VoyageEmbedIdentifier.VOYAGE_2)
+    elif option == NeevLangModelIdentifier.OPENAI_GPT_35.value:
+        ll_model = OpenAIModel()
+    elif option == NeevLangModelIdentifier.OLLAMA_MISTRAL.value:
+        ll_model = OllamaModel(OllamaModelIdentifier.MISTRAL)
+    elif option == NeevLangModelIdentifier.TOGETHER_AI.value:
+        ll_model = TogetherAiModel(TogetherAiIdentifier.LLAMA3_70B_CHAT)
+    # elif option == NeevLangModelIdentifier.HUGGING_FACE:
     #     model = HuggingFaceModel(HuggingFaceModelIdentifier.HF_ADAPT_FIN_CHAT)
     else:
         st.error("Invalid selection")
         exit(0)
 
-    vector_store = ChromaVectorStore(model)
+    vector_store = ChromaVectorStore(ll_model)
 
-    conv_service = ConversationalChainService(model, vector_store)
+    conv_service = ConversationalChainService(ll_model, vector_store)
     num = 1
     while invoke_user_form(num, st, conv_service):
         num += 1
@@ -80,8 +75,3 @@ if __name__ == "__main__":
                 st.success("Done")
 
         st.markdown("""---""")
-
-        if st.button("Clear cache for model"):
-            with st.spinner("Processing..."):
-                vector_store.drop_vector_store()
-                st.error("Done")
