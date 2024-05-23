@@ -1,17 +1,27 @@
 import streamlit as st
+from langchain.agents import OpenAIFunctionsAgent, AgentExecutor
+from langchain_community.chat_models import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.vectorstores import VectorStore
+from pydantic import BaseModel
 
-from models.neev_lang_model_enum import NeevLangModelIdentifier
+from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, TogetherAiIdentifier
 from models.embedding_enum import VoyageEmbedIdentifier
-from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel, HuggingFaceModel, TogetherAiModel
-from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, HuggingFaceModelIdentifier, \
-    TogetherAiIdentifier
-from service.conversation import ConversationalChainService
+from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel, TogetherAiModel
+from models.neev_lang_model_enum import NeevLangModelIdentifier
 from service.doc_processor import DocProcessorService
 from service.vector_store import FaissVectorStore, ChromaVectorStore
+from templates import FinOpsTemplate
+from tools.retriever_tool import VectorStoreRetrieverTool
+from tools.web_search_tool import DuckDuckGoSearchTool, TavilySearchTool
 from util.startup import initialize
 
 
-def invoke_user_form(number, st, conv_service):
+class AgentInputs(BaseModel):
+    input: str
+
+
+def invoke_user_form(number, st):
     key = "user_form" + str(number)
     with st.form(key=str(number)):
         user_question = st.text_area("Ask a Question from the uploaded files", key="question" + str(number))
@@ -22,8 +32,34 @@ def invoke_user_form(number, st, conv_service):
 
         if (user_question and submitted) or st.session_state[key]:
             st.session_state[key] = True
-            response = conv_service.get_response(user_question)
-            st.write("Reply: " + response["output_text"])
+
+            # Tools
+            retriever_tool = VectorStoreRetrieverTool(vector_store.get_vector_store()).get_tool()
+            # search_tool = DuckDuckGoSearchTool().get_tool()
+            search_tool = TavilySearchTool().get_tool()
+            tools = [retriever_tool, search_tool]
+
+            # Prompt
+            prompt = ChatPromptTemplate.from_messages(
+                [
+                    ("system", FinOpsTemplate.BASIC_RETRIEVAL_TEMPLATE),
+                    MessagesPlaceholder(variable_name="agent_scratchpad"),
+                    # ("human", "{input}"),
+                ]
+            )
+
+            # Agent
+            agent = OpenAIFunctionsAgent(
+                llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"), prompt=prompt, tools=tools
+            )
+            agent_executor = AgentExecutor(
+                agent=agent, tools=tools, max_iterations=5, early_stopping_method="generate",
+                verbose=True,
+            ) | (lambda x: x["output"])
+            agent_executor = agent_executor.with_types(input_type=AgentInputs)
+
+            print("Invoking ... Agent")
+            st.write("Reply: " + agent_executor.invoke({"input": input}))
             return True
 
 
@@ -31,7 +67,7 @@ if __name__ == "__main__":
 
     initialize()
     st.set_page_config("Neev AI")
-    st.header(f"🤖 Neev: FinOps Intelligence 🌟")
+    st.header(f"🤖Neev: FinOps Intelligence🌟")
 
     options = tuple(member.value for member in NeevLangModelIdentifier)
     default_index = options.index(NeevLangModelIdentifier.ANTHROPIC_CLAUDE3.value)
@@ -56,11 +92,7 @@ if __name__ == "__main__":
         exit(0)
 
     vector_store = ChromaVectorStore(ll_model)
-
-    conv_service = ConversationalChainService(ll_model, vector_store)
-    num = 1
-    while invoke_user_form(num, st, conv_service):
-        num += 1
+    invoke_user_form(0, st)
 
     with st.sidebar:
         st.title("Menu:")
