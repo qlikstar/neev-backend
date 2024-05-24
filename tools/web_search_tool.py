@@ -27,10 +27,10 @@ class TavilySearchTool(WebSearchTool):
         print(f"Initializing ... {self.get_tool_name()}")
 
     def get_tool_name(self):
-        return "Tavily-Search-Tool"
+        return "search"
 
     def get_tool(self) -> BaseTool:
-        return TavilySearchResults(max_results=self.results_count)
+        return TavilySearchResults(max_results=self.results_count, name=self.get_tool_name())
 
 
 class DuckDuckGoSearchTool(WebSearchTool):
@@ -46,7 +46,7 @@ class DuckDuckGoSearchTool(WebSearchTool):
         print(f"Initializing ... {self.get_tool_name()}")
 
     def get_tool_name(self):
-        return "DuckDuckGo-Search-Tool"
+        return "search"
 
     def get_tool(self) -> BaseTool:
         return Tool(name=self.get_tool_name(), func=self.duckduckgo.run, description="search current events")
