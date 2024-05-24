@@ -1,12 +1,11 @@
 import os
-import tempfile
 
 import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
 from langchain_core.documents import Document
 
-from util.constants import INPUT_FILE_PATH
+from util.constants import INPUT_FILE_PATH, EXTRACTED_FILE_PATH
 
 
 class DocProcessorService:
@@ -19,7 +18,7 @@ class DocProcessorService:
             df = pd.read_excel(xls, sheet_name)
 
             self.create_directory(f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}")
-            csv_file = f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
+            csv_file = f"{EXTRACTED_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
 
             df.to_csv(csv_file, index=False)
             output_filenames.append(csv_file)
@@ -49,7 +48,7 @@ class DocProcessorService:
 
     @staticmethod
     def save_files_to_temp(data_files):
-        temp_dir = tempfile.mkdtemp()  # Create a temporary directory
+        temp_dir = INPUT_FILE_PATH
         file_paths = []  # Store paths of saved files
 
         if data_files is not None:
@@ -59,6 +58,7 @@ class DocProcessorService:
                     f.write(file.getvalue())  # Write file contents to the temporary file
                 file_paths.append(file_path)  # Store the file path
 
+        [print(f) for f in file_paths]
         return file_paths
 
     @staticmethod
