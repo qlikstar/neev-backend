@@ -72,7 +72,7 @@ def invoke_user_form(number, st):
 if __name__ == "__main__":
 
     initialize()
-    st.set_page_config("Neev AI")
+    st.set_page_config(page_title="Your App Title", layout="wide")
     st.header(f"🤖Neev: FinOps Intelligence🌟")
 
     options = tuple(member.value for member in NeevLangModelIdentifier)
