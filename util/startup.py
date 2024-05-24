@@ -11,7 +11,7 @@ def initialize():
     set_verbose(os.getenv('LANGCHAIN_VERBOSITY') or True)
     pd.set_option("display.max_rows", 20)
     pd.set_option("display.max_columns", 20)
-    for dir in [VECTOR_STORE, INPUT_FILE_PATH, OUTPUT_FILE_PATH, INTERMEDIATE_FILE_PATH, EXTRACTED_FILE_PATH]:
+    for dir in ALL_FILE_DIRS:
         _create_temp_directory(dir)
 
 

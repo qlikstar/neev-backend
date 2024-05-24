@@ -1,11 +1,12 @@
 import os
+import shutil
 
 import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
 from langchain_core.documents import Document
 
-from util.constants import INPUT_FILE_PATH, EXTRACTED_FILE_PATH
+from util.constants import INPUT_FILE_PATH, EXTRACTED_FILE_PATH, ALL_FILE_DIRS
 
 
 class DocProcessorService:
@@ -28,8 +29,17 @@ class DocProcessorService:
         content = self.load_document(doc)
         return self.chunk_data(content)
 
-    def get_chunked_documents(self, data_files) -> list[Document]:
+    def get_chunks_from_upload_documents(self, data_files) -> list[Document]:
         file_paths = self.save_files_to_temp(data_files)
+        return self._get_chunks_filepaths(file_paths)
+
+    def get_chunks_from_directory(self, dir=INPUT_FILE_PATH):
+        file_paths = []
+        for filename in os.listdir(dir):
+            file_paths.append(os.path.join(dir, filename))
+        return self._get_chunks_filepaths(file_paths)
+
+    def _get_chunks_filepaths(self, file_paths) -> list[Document]:
         documents = []
         for file_path in file_paths:
             name, extension = os.path.splitext(file_path)
@@ -82,3 +92,19 @@ class DocProcessorService:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         chunks = text_splitter.split_documents(data)
         return chunks
+
+    @staticmethod
+    def clear_all(directories = ALL_FILE_DIRS):
+        for directory in directories:
+            if os.path.exists(directory):
+                for filename in os.listdir(directory):
+                    file_path = os.path.join(directory, filename)
+                    try:
+                        if os.path.isfile(file_path) or os.path.islink(file_path):
+                            os.unlink(file_path)
+                        elif os.path.isdir(file_path):
+                            shutil.rmtree(file_path)
+                    except Exception as e:
+                        print(f'Failed to delete {file_path}. Reason: {e}')
+            else:
+                print(f'Directory {directory} does not exist.')

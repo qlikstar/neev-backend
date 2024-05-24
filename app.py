@@ -10,7 +10,7 @@ from models.embedding_enum import VoyageEmbedIdentifier
 from models.large_lang_model import OpenAIModel, OllamaModel, AnthropicModel, TogetherAiModel
 from models.neev_lang_model_enum import NeevLangModelIdentifier
 from service.doc_processor import DocProcessorService
-from service.vector_store import FaissVectorStore, ChromaVectorStore
+from service.vector_store import FaissVectorStore, ChromaVectorStore, BaseVectorStore
 from templates import FinOpsTemplate
 from tools.python_repl_tool import get_python_repl_tool
 from tools.retriever_tool import VectorStoreRetrieverTool
@@ -62,7 +62,10 @@ def invoke_user_form(number, st):
             agent_executor = agent_executor.with_types(input_type=AgentInputs)
 
             print("Invoking ... Agent")
-            st.write("Reply: " + agent_executor.invoke({"input": user_question}))
+            try:
+                st.write("Reply: " + agent_executor.invoke({"input": user_question}))
+            except:
+                st.write("Error: Could not find an answer. Please check error logs" )
             return True
 
 
@@ -94,7 +97,8 @@ if __name__ == "__main__":
         st.error("Invalid selection")
         exit(0)
 
-    vector_store = ChromaVectorStore(ll_model)
+    doc_processor = DocProcessorService()
+    vector_store: BaseVectorStore = ChromaVectorStore(ll_model, doc_processor)
     invoke_user_form(0, st)
 
     with st.sidebar:
@@ -104,9 +108,12 @@ if __name__ == "__main__":
 
         if st.button("Submit & Process"):
             with st.spinner("Processing..."):
-                doc_processor_service = DocProcessorService()
-                chunked_docs = doc_processor_service.get_chunked_documents(data_files)
-                vector_store.create_vector_embeddings(chunked_docs)
+                vector_store.create_vector_embeddings(data_files)
                 st.success("Done")
 
         st.markdown("""---""")
+
+        if st.button("Clear all files"):
+            with st.spinner("Processing..."):
+                doc_processor.clear_all()
+                st.error("Cleared uploaded files")
