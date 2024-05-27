@@ -4,7 +4,6 @@ import streamlit as st
 from langchain.agents import AgentExecutor, create_openai_functions_agent, OpenAIFunctionsAgent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.vectorstores import VectorStore
 from pydantic import BaseModel
 
 from models.LLM_enum import OllamaModelIdentifier, AnthropicModelIdentifier, TogetherAiIdentifier
@@ -17,6 +16,7 @@ from templates import FinOpsTemplate
 from tools.python_repl_tool import get_python_repl_tool
 from tools.retriever_tool import VectorStoreRetrieverTool
 from tools.web_search_tool import DuckDuckGoSearchTool, TavilySearchTool
+from util.constants import SAMPLE_QUESTIONS
 from util.csv_reader_df import convert_csv_to_df
 from util.startup import initialize
 
@@ -42,7 +42,7 @@ def get_tools(df_dict, vector_store):
 def populate_filenames_in_buffer(doc_processor):
     files = doc_processor.get_all_file_names()
     if len(files) == 0:
-        st.warning("**Please upload a file to process!**")
+        st.error("**Please upload a file to process!**")
     else:
         files_present_message = "**Files present in the memory:**\n"
         for file in files:
@@ -73,6 +73,8 @@ def main():
     else:
         st.error("Invalid selection")
         exit(0)
+
+    st.warning(SAMPLE_QUESTIONS)
 
     doc_processor = DocProcessorService()
     vector_store: BaseVectorStore = ChromaVectorStore(ll_model, doc_processor)
@@ -138,13 +140,14 @@ def main():
             with st.spinner("Processing..."):
                 vector_store.create_vector_embeddings(data_files)
                 st.success("Done")
-                sleep(2)
+                sleep(1)
                 st.rerun()
 
         st.markdown("""---""")
         if st.button("Clear all files"):
             with st.spinner("Processing..."):
                 doc_processor.clear_all()
+                st.session_state.question_ans = []
                 st.error("Cleared uploaded files")
                 st.rerun()
 
