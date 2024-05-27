@@ -60,7 +60,7 @@ def populate_filenames_in_output(doc_processor):
 
 
 def main():
-    st.set_page_config(page_title="Your App Title", layout="wide")
+    st.set_page_config(page_title="Neev", layout="wide")
     st.header(f"🤖Neev: FinOps Intelligence🌟")
 
     options = tuple(member.value for member in NeevLangModelIdentifier)
@@ -142,21 +142,21 @@ def main():
         populate_filenames_in_buffer(doc_processor)
         populate_filenames_in_output(doc_processor)
 
-        # st.markdown("""---""")
-        # data_files = st.file_uploader("Upload your Files and Click on the Submit & Process Button",
-        #                               accept_multiple_files=True)
-        #
-        # if st.button("Submit & Process"):
-        #     with st.spinner("Processing..."):
-        #         vector_store.create_vector_embeddings(data_files)
-        #         st.success("Done")
-        #         sleep(1)
-        #         st.rerun()
+        st.markdown("""---""")
+        data_files = st.file_uploader("Upload your Files and Click on the Submit & Process Button",
+                                      accept_multiple_files=True)
+
+        if st.button("Submit & Process"):
+            with st.spinner("Processing..."):
+                vector_store.create_vector_embeddings(data_files)
+                st.success("Done")
+                sleep(1)
+                st.rerun()
 
         st.markdown("""---""")
         if st.button("Clear all files"):
             with st.spinner("Processing..."):
-                # doc_processor.clear_all()
+                doc_processor.clear_all()
                 st.session_state.question_ans = []
                 st.error("Cleared uploaded files")
                 st.rerun()
