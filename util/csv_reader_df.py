@@ -1,11 +1,11 @@
 import os
 import pandas as pd
-from util.constants import EXTRACTED_FILE_PATH
+from util.constants import BUFFER_FILE_PATH
 
 
 def convert_csv_to_df():
     all_xls_data = ''
-    directory = EXTRACTED_FILE_PATH
+    directory = BUFFER_FILE_PATH
     df_dict = {}
 
     for filename in os.listdir(directory):

@@ -6,7 +6,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, CSVLoader
 from langchain_core.documents import Document
 
-from util.constants import INPUT_FILE_PATH, EXTRACTED_FILE_PATH, ALL_FILE_DIRS
+from util.constants import INPUT_FILE_PATH, BUFFER_FILE_PATH, ALL_FILE_DIRS
 
 
 class DocProcessorService:
@@ -19,7 +19,7 @@ class DocProcessorService:
             df = pd.read_excel(xls, sheet_name)
 
             self.create_directory(f"{INPUT_FILE_PATH}/{input_file.split('.')[0]}")
-            csv_file = f"{EXTRACTED_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
+            csv_file = f"{BUFFER_FILE_PATH}/{input_file.split('.')[0]}/{sheet_name}.csv"
 
             df.to_csv(csv_file, index=False)
             output_filenames.append(csv_file)
@@ -108,3 +108,15 @@ class DocProcessorService:
                         print(f'Failed to delete {file_path}. Reason: {e}')
             else:
                 print(f'Directory {directory} does not exist.')
+
+    @staticmethod
+    def get_all_file_names(directory=INPUT_FILE_PATH):
+        try:
+            file_names = os.listdir(directory)
+            return file_names
+        except FileNotFoundError as e:
+            print(f"Directory not found: {directory}")
+            return []
+        except Exception as e:
+            print("An unexpected error occurred.")
+            return []
