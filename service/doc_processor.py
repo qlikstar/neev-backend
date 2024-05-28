@@ -45,8 +45,15 @@ class DocProcessorService:
             name, extension = os.path.splitext(file_path)
             if extension in ['.xls', '.xlsx']:
                 output_csv_files = self.excel_to_csv(file_path)
-                for file in output_csv_files[:1]:
-                    documents.extend(self.chunk_doc(file))
+                for file in output_csv_files[:]:
+                    df = pd.read_csv(file, nrows=5)
+                    temp_file = 'temp_first_few_lines.csv'
+                    df.to_csv(temp_file, index=False)
+                    documents.extend(self.chunk_doc(temp_file))
+
+                    # Remove the file after use
+                    if os.path.exists(temp_file):
+                        os.remove(temp_file)
             else:
                 documents.extend(self.chunk_doc(file_path))
         return documents

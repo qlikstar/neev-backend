@@ -14,7 +14,7 @@ SAMPLE_QUESTIONS = \
 **Here are some of the sample questions you may ask:**
 - Describe the input doc in 10 bullet points
 - Show me first few rows of all the files in the buffer as dataframes
-- Add a new column "Total Payment" by adding "Amount" and "Fee" in Stripe Payments and save the results to buffer 
+- Add a new column "Total Payment" by adding "Amount" and "Fee" in Stripe Payments and overwrite the results to the same dataframe
 - create a new dataframe with the 2 columns: 1. dataframe name and 2. no of rows in the dataframe and save it as "summary" in buffer
 - Now, create a new excel file with "summary" dataframe as the first sheet, and other input dataframes as sheets from the buffer, and save it as "output_all.xlsx"
 """

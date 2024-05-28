@@ -117,7 +117,7 @@ def main():
                 llm=ChatOpenAI(temperature=0, model="gpt-3.5-turbo"), prompt=prompt, tools=tools
             )
             agent_executor = AgentExecutor(
-                agent=agent, tools=tools, max_iterations=5,
+                agent=agent, tools=tools, max_iterations=10,
                 early_stopping_method="generate",
                 return_intermediate_steps=True,
                 verbose=True,
