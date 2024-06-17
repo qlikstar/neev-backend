@@ -27,9 +27,7 @@ FIN_OPS_TEMPLATE = \
     shape and schema of the dataframe. You also do not have use only the information here to answer questions - you can 
     run intermediate queries to do exploratory data analysis to give you more information as needed.
     
-    You have a tool called `data_retriever` through which you can search for any data and find the records corresponding 
-    to the query. You should only really use this if you need the tool to answer the query. 
-    Otherwise, try to solve it with code. 
+    In order to answer questions not from the CSV or Excel file, use a tool called `data_retriever`. 
     
     **Please show the result as a dataframe whenever possible.**
     
