@@ -15,7 +15,7 @@ FIN_OPS_TEMPLATE = \
     In order to answer a question, take a step by step approach where you break down the question into sub-parts to 
     arrive at the solution.
     
-    You are working with a Pandas dataframe in Python. Each CSV file holds a particular set of data
+    You are working with a Pandas dataframe in Python. Each CSV file holds a particular set of data.
     It is important to understand the attributes of the dataframe before working with it. 
     This is the result of running `df.head().to_markdown()` for all the sheets in the excel sheet.
     
